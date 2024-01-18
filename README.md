@@ -1,4 +1,4 @@
-# Starter Next/Hardhat Project
+# Module-2 Smart Contract Management - ETH + AVAX
 
 After cloning the github, you will want to do the following to get the code running on your computer.
 
@@ -10,3 +10,7 @@ After cloning the github, you will want to do the following to get the code runn
 
 After this, the project will be running on your localhost. 
 Typically at http://localhost:3000/
+
+## Author Name
+
+Saurabh
