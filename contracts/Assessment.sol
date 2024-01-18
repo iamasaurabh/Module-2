@@ -1,60 +1,69 @@
-// SPDX-License-Identifier: UNLICENSED
+ // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
-
-//import "hardhat/console.sol";
 
 contract Assessment {
     address payable public owner;
     uint256 public balance;
 
+    struct House {
+        bool isRented;
+        uint256 rentAmount;
+        uint256 leaseDuration; // Lease duration in months
+        address tenant;
+    }
+
+    mapping(address => House) public houses;
+
     event Deposit(uint256 amount);
     event Withdraw(uint256 amount);
+    event HouseRented(address indexed tenant, uint256 rentAmount, uint256 leaseDuration);
+    event HouseLeased(address indexed landlord, uint256 rentAmount, uint256 leaseDuration);
 
     constructor(uint initBalance) payable {
         owner = payable(msg.sender);
         balance = initBalance;
     }
 
-    function getBalance() public view returns(uint256){
+    function getBalance() public view returns (uint256) {
         return balance;
     }
 
     function deposit(uint256 _amount) public payable {
-        uint _previousBalance = balance;
-
-        // make sure this is the owner
+        uint256 _previousBalance = balance;
         require(msg.sender == owner, "You are not the owner of this account");
-
-        // perform transaction
         balance += _amount;
-
-        // assert transaction completed successfully
         assert(balance == _previousBalance + _amount);
-
-        // emit the event
         emit Deposit(_amount);
     }
 
-    // custom error
+    // Custom error
     error InsufficientBalance(uint256 balance, uint256 withdrawAmount);
 
     function withdraw(uint256 _withdrawAmount) public {
         require(msg.sender == owner, "You are not the owner of this account");
-        uint _previousBalance = balance;
+        uint256 _previousBalance = balance;
         if (balance < _withdrawAmount) {
             revert InsufficientBalance({
                 balance: balance,
                 withdrawAmount: _withdrawAmount
             });
         }
-
-        // withdraw the given amount
         balance -= _withdrawAmount;
-
-        // assert the balance is correct
         assert(balance == (_previousBalance - _withdrawAmount));
-
-        // emit the event
         emit Withdraw(_withdrawAmount);
+    }
+
+    function rentHouse(address _tenant, uint256 _rentAmount, uint256 _leaseDuration) public {
+        require(msg.sender == owner, "You are not the owner of this house");
+        require(!houses[_tenant].isRented, "House is already rented");
+        houses[_tenant] = House(true, _rentAmount, _leaseDuration, _tenant);
+        emit HouseRented(_tenant, _rentAmount, _leaseDuration);
+    }
+
+    function leaseHouse(address _landlord, uint256 _rentAmount, uint256 _leaseDuration) public {
+        require(msg.sender == _landlord, "You are not the landlord of this house");
+        require(!houses[_landlord].isRented, "House is already rented");
+        houses[_landlord] = House(true, _rentAmount, _leaseDuration, _landlord);
+        emit HouseLeased(_landlord, _rentAmount, _leaseDuration);
     }
 }
